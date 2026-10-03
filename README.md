@@ -26,7 +26,7 @@ Built on Java's standard `HttpClient`, JFetch aims to make HTTP requests less ve
 <dependency>
      <groupId>io.github.rijalharayo</groupId>
      <artifactId>jfetch</artifactId>
-     <version>1.0.0</version>
+     <version>1.0.1</version>
 </dependency>
 ```
 
