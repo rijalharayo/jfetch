@@ -8,12 +8,13 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
-/*
-        Provides static methods for sending HTTP requests.
 
-        Supports GET, POST, PUT, PATCH, and DELETE requests,
-        with optional URL query parameters and request bodies.
+/*
+Provides static methods for sending HTTP requests.
+Supports GET, POST, PUT, PATCH, and DELETE requests,
+with optional URL query parameters and request bodies.
 */
 public class Http {
 
@@ -340,11 +341,7 @@ public class Http {
      @throws IOException if an I/O error occurs
      @throws InterruptedException if the request is interrupted
      */
-     public static Response delete(
-             String url,
-             Map<String, ?> params,
-             RequestBody body
-     ) throws IOException, InterruptedException {
+     public static Response delete(String url, Map<String, ?> params, RequestBody body) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
                           .uri(buildUri(url, params))
@@ -352,6 +349,314 @@ public class Http {
                           .method("DELETE", body.publisher())
                           .build()
           );
+     }
+
+     /**
+     Sends an asynchronous GET request to the specified URL.
+
+     @param url the URL to send the request to
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> getAsync(String url) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(URI.create(url))
+                          .GET()
+                          .build()
+          );
+     }
+
+     /**
+     Sends an asynchronous GET request with URL query parameters.
+
+     @param url the URL to send the request to
+     @param params the query parameters to append to the URL
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> getAsync(String url, Map<String, ?> params) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(buildUri(url, params))
+                          .GET()
+                          .build()
+          );
+     }
+
+     /**
+     Sends an asynchronous POST request with a request body.
+
+     @param url the URL to send the request to
+     @param body the request body to send
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> postAsync(String url, RequestBody body) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(URI.create(url))
+                          .header("Content-Type", body.contentType())
+                          .POST(body.publisher())
+                          .build()
+          );
+     }
+
+     /**
+     Sends an asynchronous POST request with URL query parameters and a request body.
+
+     @param url the URL to send the request to
+     @param params the query parameters to append to the URL
+     @param body the request body to send
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> postAsync(String url, Map<String, ?> params, RequestBody body) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(buildUri(url, params))
+                          .header("Content-Type", body.contentType())
+                          .POST(body.publisher())
+                          .build()
+          );
+     }
+
+     /**
+     Sends an asynchronous POST request without a request body.
+
+     @param url the URL to send the request to
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> postAsync(String url) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(URI.create(url))
+                          .POST(HttpRequest.BodyPublishers.noBody())
+                          .build()
+          );
+     }
+
+     /**
+     Sends an asynchronous POST request with URL query parameters but without a request body.
+
+     @param url the URL to send the request to
+     @param params the query parameters to append to the URL
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> postAsync(String url, Map<String, ?> params) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(buildUri(url, params))
+                          .POST(HttpRequest.BodyPublishers.noBody())
+                          .build()
+          );
+     }
+
+     /**
+     Sends an asynchronous PUT request with a request body.
+
+     @param url the URL to send the request to
+     @param body the request body to send
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> putAsync(String url, RequestBody body) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(URI.create(url))
+                          .header("Content-Type", body.contentType())
+                          .PUT(body.publisher())
+                          .build()
+          );
+     }
+
+     /**
+     Sends an asynchronous PUT request with URL query parameters and a request body.
+
+     @param url the URL to send the request to
+     @param params the query parameters to append to the URL
+     @param body the request body to send
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> putAsync(String url, Map<String, ?> params, RequestBody body) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(buildUri(url, params))
+                          .header("Content-Type", body.contentType())
+                          .PUT(body.publisher())
+                          .build()
+          );
+     }
+
+     /**
+     Sends an asynchronous PUT request without a request body.
+
+     @param url the URL to send the request to
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> putAsync(String url) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(URI.create(url))
+                          .PUT(HttpRequest.BodyPublishers.noBody())
+                          .build()
+          );
+     }
+
+     /**
+     Sends an asynchronous PUT request with URL query parameters but without a request body.
+
+     @param url the URL to send the request to
+     @param params the query parameters to append to the URL
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> putAsync(String url, Map<String, ?> params) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(buildUri(url, params))
+                          .PUT(HttpRequest.BodyPublishers.noBody())
+                          .build()
+          );
+     }
+
+     /**
+     Sends an asynchronous PATCH request with a request body.
+
+     @param url the URL to send the request to
+     @param body the request body to send
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> patchAsync(String url, RequestBody body) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(URI.create(url))
+                          .header("Content-Type", body.contentType())
+                          .method("PATCH", body.publisher())
+                          .build()
+          );
+     }
+
+     /**
+     Sends an asynchronous PATCH request with URL query parameters and a request body.
+
+     @param url the URL to send the request to
+     @param params the query parameters to append to the URL
+     @param body the request body to send
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> patchAsync(String url, Map<String, ?> params, RequestBody body) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(buildUri(url, params))
+                          .header("Content-Type", body.contentType())
+                          .method("PATCH", body.publisher())
+                          .build()
+          );
+     }
+
+     /**
+     Sends an asynchronous PATCH request without a request body.
+
+     @param url the URL to send the request to
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> patchAsync(String url) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(URI.create(url))
+                          .method("PATCH", HttpRequest.BodyPublishers.noBody())
+                          .build()
+          );
+     }
+
+     /**
+     Sends an asynchronous PATCH request with URL query parameters but without a request body.
+
+     @param url the URL to send the request to
+     @param params the query parameters to append to the URL
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> patchAsync(String url, Map<String, ?> params) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(buildUri(url, params))
+                          .method("PATCH", HttpRequest.BodyPublishers.noBody())
+                          .build()
+          );
+     }
+
+     /**
+     Sends an asynchronous DELETE request.
+
+     @param url the URL to send the request to
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> deleteAsync(String url) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(URI.create(url))
+                          .DELETE()
+                          .build()
+          );
+     }
+
+     /**
+     Sends an asynchronous DELETE request with URL query parameters.
+
+     @param url the URL to send the request to
+     @param params the query parameters to append to the URL
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> deleteAsync(String url, Map<String, ?> params) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(buildUri(url, params))
+                          .DELETE()
+                          .build()
+          );
+     }
+
+     /**
+     Sends an asynchronous DELETE request with a request body.
+
+     @param url the URL to send the request to
+     @param body the request body to send
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> deleteAsync(String url, RequestBody body) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(URI.create(url))
+                          .header("Content-Type", body.contentType())
+                          .method("DELETE", body.publisher())
+                          .build()
+          );
+     }
+
+     /**
+     Sends an asynchronous DELETE request with URL query parameters and a request body.
+
+     @param url the URL to send the request to
+     @param params the query parameters to append to the URL
+     @param body the request body to send
+     @return a CompletableFuture containing the server response
+     */
+     public static CompletableFuture<Response> deleteAsync(String url, Map<String, ?> params, RequestBody body) {
+          return sendAsync(
+                  HttpRequest.newBuilder()
+                          .uri(buildUri(url, params))
+                          .header("Content-Type", body.contentType())
+                          .method("DELETE", body.publisher())
+                          .build()
+          );
+     }
+
+     /**
+     Sends the prepared request asynchronously through the shared HTTP client.
+
+     @param request the HTTP request to send
+     @return a CompletableFuture containing the server response
+     */
+     private static CompletableFuture<Response> sendAsync(HttpRequest request) {
+          return CLIENT.sendAsync(
+                  request,
+                  HttpResponse.BodyHandlers.ofString()
+          ).thenApply(Response::new);
      }
 
      /**
@@ -390,8 +695,8 @@ public class Http {
                                   entry.getKey(),
                                   StandardCharsets.UTF_8
                           )
-                          + "=" +
-                          URLEncoder.encode(
+                          + "="
+                          + URLEncoder.encode(
                                   String.valueOf(entry.getValue()),
                                   StandardCharsets.UTF_8
                           )
