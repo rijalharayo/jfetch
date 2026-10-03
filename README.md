@@ -24,13 +24,13 @@ Built on Java's standard `HttpClient`, JFetch aims to make HTTP requests less ve
 
 ```xml
 <dependency>
-     <groupId>com.jfetch</groupId>
+     <groupId>io.github.rijalharayo</groupId>
      <artifactId>jfetch</artifactId>
      <version>1.0.0</version>
 </dependency>
 ```
 
-> JFetch is currently under development and has not yet been published to Maven Central.
+JFetch is published on Maven Central.
 
 ## Quick Start
 
@@ -162,6 +162,8 @@ response.isClientError();
 response.isServerError();
 ```
 
+HTTP error responses such as `4xx` and `5xx` are returned as normal `Response` objects rather than being automatically thrown as exceptions.
+
 ## Supported Methods
 
 | Method | Sync | Async |
@@ -176,7 +178,7 @@ All supported methods can optionally use:
 
 * Query parameters
 * Request headers
-* Request bodies where applicable
+* Request bodies
 
 ## Requirements
 
@@ -191,10 +193,14 @@ JFetch uses:
 
 ## Project Status
 
-JFetch is currently under active development.
+JFetch 1.0.0 has been released and published to Maven Central.
 
-The core HTTP functionality is implemented, while testing, documentation, and Maven Central publishing are still being worked on.
+The core HTTP functionality currently includes synchronous and asynchronous requests, query parameters, custom headers, JSON request bodies, and JSON response parsing.
+
+JFetch is still under active development, with additional features and improvements planned for future releases.
 
 ## License
 
-License information will be added before the first public release.
+JFetch is licensed under the MIT License.
+
+See the `LICENSE` file for the full license text.
