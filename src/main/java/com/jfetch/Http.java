@@ -9,7 +9,12 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.stream.Collectors;
+/*
+        Provides static methods for sending HTTP requests.
 
+        Supports GET, POST, PUT, PATCH, and DELETE requests,
+        with optional URL query parameters and request bodies.
+*/
 public class Http {
 
      private static final HttpClient CLIENT = HttpClient.newHttpClient();

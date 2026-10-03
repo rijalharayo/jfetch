@@ -11,7 +11,6 @@ import java.net.http.HttpRequest;
     into formats suitable for sending with an HTTP request.</p>
 */
 public class RequestBody {
-
      private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
      private final String content;

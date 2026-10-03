@@ -7,6 +7,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.http.HttpHeaders;
 import java.net.http.HttpResponse;
 
+/*
+     Represents the response returned by an HTTP request.
+
+     Provides access to the response status, body, headers,
+     and methods for parsing JSON responses.
+*/
 public class Response {
      private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
