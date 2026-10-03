@@ -57,6 +57,15 @@
                     <version>3.5.3</version>
                </plugin>
 
+               <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>3.6.4</version>
+                    <configuration>
+                         <mainClass>com.jfetch.App</mainClass>
+                    </configuration>
+               </plugin>
+
           </plugins>
      </build>
 
