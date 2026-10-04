@@ -5,17 +5,165 @@
 It supports:
 
 * GET
+
 * POST
+
 * PUT
+
 * PATCH
+
 * DELETE
+
 * Synchronous requests
+
 * Asynchronous requests
+
 * URL query parameters
+
 * Custom request headers
+
 * Request bodies
 
+* Default base URLs
+
 All requests are sent using Java's built-in `HttpClient`.
+
+---
+
+## Default Base URL
+
+JFetch allows a default base URL to be configured for requests that use relative URLs.
+
+A default base URL can be set using:
+
+```java
+Http.setDefaultBaseUrl(
+     "https://api.example.com"
+);
+```
+
+Once configured, requests can use relative paths:
+
+```java
+Response response = Http.get(
+     "/users"
+);
+```
+
+The request will be sent to:
+
+```text
+https://api.example.com/users
+```
+
+This is useful when an application communicates primarily with a single API.
+
+For example, a JavaFX application can configure its backend URL once:
+
+```java
+Http.setDefaultBaseUrl(
+     "http://localhost:8080"
+);
+```
+
+and then make requests using only API paths:
+
+```java
+Http.get("/api/users");
+
+Http.get("/api/subjects");
+
+Http.post(
+     "/api/assignments",
+     RequestBody.json(assignment)
+);
+```
+
+### Absolute URLs
+
+Setting a default base URL does not prevent requests from being sent to other APIs.
+
+If a request contains an absolute URL, JFetch uses that URL directly:
+
+```java
+Http.get(
+     "https://api.github.com/users/octocat"
+);
+```
+
+The configured default base URL is ignored for absolute URLs.
+
+Therefore:
+
+```text
+Relative URL
+     ↓
+Default base URL + relative path
+
+Absolute URL
+     ↓
+URL used directly
+```
+
+For example, if:
+
+```java
+Http.setDefaultBaseUrl(
+     "https://api.example.com"
+);
+```
+
+then:
+
+```java
+Http.get("/users");
+```
+
+produces:
+
+```text
+https://api.example.com/users
+```
+
+while:
+
+```java
+Http.get("https://api.github.com/users/octocat");
+```
+
+produces:
+
+```text
+https://api.github.com/users/octocat
+```
+
+### Base URL Without a Trailing Slash
+
+The default base URL should not end with a trailing slash when using paths that begin with `/`.
+
+Use:
+
+```java
+Http.setDefaultBaseUrl(
+     "https://api.example.com"
+);
+```
+
+then:
+
+```java
+Http.get("/users");
+```
+
+rather than:
+
+```java
+Http.setDefaultBaseUrl(
+     "https://api.example.com/"
+);
+```
+
+This keeps URL construction predictable and avoids duplicated slashes.
 
 ---
 
@@ -25,11 +173,21 @@ The simplest GET request can be sent using:
 
 ```java
 Response response = Http.get(
-        "https://api.example.com/users"
+     "https://api.example.com/users"
 );
 ```
 
 The method returns a `Response` containing the server's response.
+
+A relative URL can also be used when a default base URL is configured:
+
+```java
+Response response = Http.get(
+     "/users"
+);
+```
+
+---
 
 ### GET with Query Parameters
 
@@ -42,14 +200,20 @@ Map<String, Object> params = Map.of(
 );
 
 Response response = Http.get(
-        "https://api.example.com/users",
-        params
+     "/users",
+     params
 );
 ```
 
 JFetch URL-encodes the parameter names and values and appends them to the URL.
 
-For example, the request above produces a URL similar to:
+For example, when the default base URL is:
+
+```text
+https://api.example.com
+```
+
+the request above produces a URL similar to:
 
 ```text
 https://api.example.com/users?page=1&limit=10
@@ -63,8 +227,8 @@ Map<String, Object> params = Map.of(
 );
 
 Response response = Http.get(
-        "https://api.example.com/users?sort=name",
-        params
+     "/users?sort=name",
+     params
 );
 ```
 
@@ -73,6 +237,17 @@ The resulting URL is:
 ```text
 https://api.example.com/users?sort=name&page=2
 ```
+
+Absolute URLs can still be used:
+
+```java
+Response response = Http.get(
+     "https://api.example.com/users",
+     params
+);
+```
+
+---
 
 ### GET with Headers
 
@@ -85,8 +260,8 @@ Headers headers = Headers.of(
 );
 
 Response response = Http.get(
-        "https://api.example.com/users",
-        headers
+     "/users",
+     headers
 );
 ```
 
@@ -94,9 +269,9 @@ Query parameters and headers can also be used together:
 
 ```java
 Response response = Http.get(
-        "https://api.example.com/users",
-        params,
-        headers
+     "/users",
+     params,
+     headers
 );
 ```
 
@@ -108,8 +283,8 @@ A POST request can be sent with a JSON request body:
 
 ```java
 Response response = Http.post(
-        "https://api.example.com/users",
-        RequestBody.json(user)
+     "/users",
+     RequestBody.json(user)
 );
 ```
 
@@ -121,7 +296,7 @@ A POST request does not require a request body:
 
 ```java
 Response response = Http.post(
-        "https://api.example.com/users"
+     "/users"
 );
 ```
 
@@ -131,8 +306,8 @@ Headers can be supplied without a request body:
 
 ```java
 Response response = Http.post(
-        "https://api.example.com/users",
-        headers
+     "/users",
+     headers
 );
 ```
 
@@ -140,9 +315,9 @@ Headers can also be combined with a request body:
 
 ```java
 Response response = Http.post(
-        "https://api.example.com/users",
-        RequestBody.json(user),
-        headers
+     "/users",
+     RequestBody.json(user),
+     headers
 );
 ```
 
@@ -152,9 +327,9 @@ Query parameters can be supplied together with a request body:
 
 ```java
 Response response = Http.post(
-        "https://api.example.com/users",
-        params,
-        RequestBody.json(user)
+     "/users",
+     params,
+     RequestBody.json(user)
 );
 ```
 
@@ -162,12 +337,14 @@ All three can be combined:
 
 ```java
 Response response = Http.post(
-        "https://api.example.com/users",
-        params,
-        RequestBody.json(user),
-        headers
+     "/users",
+     params,
+     RequestBody.json(user),
+     headers
 );
 ```
+
+The same argument structures can be used with absolute URLs.
 
 ---
 
@@ -179,8 +356,8 @@ PUT requests use the same API structure as POST requests.
 
 ```java
 Response response = Http.put(
-        "https://api.example.com/users/1",
-        RequestBody.json(user)
+     "/users/1",
+     RequestBody.json(user)
 );
 ```
 
@@ -188,7 +365,7 @@ Response response = Http.put(
 
 ```java
 Response response = Http.put(
-        "https://api.example.com/users/1"
+     "/users/1"
 );
 ```
 
@@ -196,8 +373,8 @@ Response response = Http.put(
 
 ```java
 Response response = Http.put(
-        "https://api.example.com/users/1",
-        headers
+     "/users/1",
+     headers
 );
 ```
 
@@ -205,8 +382,8 @@ Response response = Http.put(
 
 ```java
 Response response = Http.put(
-        "https://api.example.com/users/1",
-        params
+     "/users/1",
+     params
 );
 ```
 
@@ -214,10 +391,10 @@ Query parameters, a request body, and headers can all be combined:
 
 ```java
 Response response = Http.put(
-        "https://api.example.com/users/1",
-        params,
-        RequestBody.json(user),
-        headers
+     "/users/1",
+     params,
+     RequestBody.json(user),
+     headers
 );
 ```
 
@@ -231,8 +408,8 @@ PATCH requests are useful for partially updating an existing resource.
 
 ```java
 Response response = Http.patch(
-        "https://api.example.com/users/1",
-        RequestBody.json(user)
+     "/users/1",
+     RequestBody.json(user)
 );
 ```
 
@@ -240,7 +417,7 @@ Response response = Http.patch(
 
 ```java
 Response response = Http.patch(
-        "https://api.example.com/users/1"
+     "/users/1"
 );
 ```
 
@@ -248,8 +425,8 @@ Response response = Http.patch(
 
 ```java
 Response response = Http.patch(
-        "https://api.example.com/users/1",
-        headers
+     "/users/1",
+     headers
 );
 ```
 
@@ -257,8 +434,8 @@ Response response = Http.patch(
 
 ```java
 Response response = Http.patch(
-        "https://api.example.com/users/1",
-        params
+     "/users/1",
+     params
 );
 ```
 
@@ -266,10 +443,10 @@ Query parameters, a request body, and headers can all be combined:
 
 ```java
 Response response = Http.patch(
-        "https://api.example.com/users/1",
-        params,
-        RequestBody.json(user),
-        headers
+     "/users/1",
+     params,
+     RequestBody.json(user),
+     headers
 );
 ```
 
@@ -281,7 +458,7 @@ DELETE requests can be sent without a body:
 
 ```java
 Response response = Http.delete(
-        "https://api.example.com/users/1"
+     "/users/1"
 );
 ```
 
@@ -289,8 +466,8 @@ Response response = Http.delete(
 
 ```java
 Response response = Http.delete(
-        "https://api.example.com/users/1",
-        headers
+     "/users/1",
+     headers
 );
 ```
 
@@ -298,8 +475,8 @@ Response response = Http.delete(
 
 ```java
 Response response = Http.delete(
-        "https://api.example.com/users",
-        params
+     "/users",
+     params
 );
 ```
 
@@ -309,8 +486,8 @@ JFetch also allows a request body to be supplied with DELETE:
 
 ```java
 Response response = Http.delete(
-        "https://api.example.com/users",
-        RequestBody.json(data)
+     "/users",
+     RequestBody.json(data)
 );
 ```
 
@@ -318,10 +495,10 @@ Query parameters, a request body, and headers can all be combined:
 
 ```java
 Response response = Http.delete(
-        "https://api.example.com/users",
-        params,
-        RequestBody.json(data),
-        headers
+     "/users",
+     params,
+     RequestBody.json(data),
+     headers
 );
 ```
 
@@ -339,9 +516,11 @@ Asynchronous methods return a `CompletableFuture<Response>` instead of waiting f
 
 ```java
 Http.getAsync(
-        "https://api.example.com/users"
+     "/users"
 ).thenAccept(response -> {
+
      System.out.println(response.text());
+
 });
 ```
 
@@ -349,10 +528,12 @@ Http.getAsync(
 
 ```java
 Http.getAsync(
-        "https://api.example.com/users",
-        params
+     "/users",
+     params
 ).thenAccept(response -> {
+
      System.out.println(response.text());
+
 });
 ```
 
@@ -360,10 +541,12 @@ Http.getAsync(
 
 ```java
 Http.getAsync(
-        "https://api.example.com/users",
-        headers
+     "/users",
+     headers
 ).thenAccept(response -> {
+
      System.out.println(response.text());
+
 });
 ```
 
@@ -371,11 +554,25 @@ Query parameters and headers can also be combined:
 
 ```java
 Http.getAsync(
-        "https://api.example.com/users",
-        params,
-        headers
+     "/users",
+     params,
+     headers
 ).thenAccept(response -> {
+
      System.out.println(response.text());
+
+});
+```
+
+Absolute URLs can be used in the same way:
+
+```java
+Http.getAsync(
+     "https://api.github.com/users/octocat"
+).thenAccept(response -> {
+
+     System.out.println(response.text());
+
 });
 ```
 
@@ -389,10 +586,12 @@ For example, an asynchronous POST request with a body:
 
 ```java
 Http.postAsync(
-        "https://api.example.com/users",
-        RequestBody.json(user)
+     "/users",
+     RequestBody.json(user)
 ).thenAccept(response -> {
+
      System.out.println(response.statusCode());
+
 });
 ```
 
@@ -400,12 +599,14 @@ With query parameters and headers:
 
 ```java
 Http.postAsync(
-        "https://api.example.com/users",
-        params,
-        RequestBody.json(user),
-        headers
+     "/users",
+     params,
+     RequestBody.json(user),
+     headers
 ).thenAccept(response -> {
+
      System.out.println(response.text());
+
 });
 ```
 
@@ -413,11 +614,13 @@ The same structure is available for PUT:
 
 ```java
 Http.putAsync(
-        "https://api.example.com/users/1",
-        RequestBody.json(user),
-        headers
+     "/users/1",
+     RequestBody.json(user),
+     headers
 ).thenAccept(response -> {
+
      System.out.println(response.statusCode());
+
 });
 ```
 
@@ -425,11 +628,13 @@ PATCH:
 
 ```java
 Http.patchAsync(
-        "https://api.example.com/users/1",
-        RequestBody.json(user),
-        headers
+     "/users/1",
+     RequestBody.json(user),
+     headers
 ).thenAccept(response -> {
+
      System.out.println(response.statusCode());
+
 });
 ```
 
@@ -437,10 +642,12 @@ And DELETE:
 
 ```java
 Http.deleteAsync(
-        "https://api.example.com/users/1",
-        headers
+     "/users/1",
+     headers
 ).thenAccept(response -> {
+
      System.out.println(response.statusCode());
+
 });
 ```
 
@@ -478,9 +685,15 @@ For example:
 
 ```java
 Http.get(
-        "https://api.example.com/users",
-        params
+     "/users",
+     params
 );
+```
+
+with the default base URL:
+
+```text
+https://api.example.com
 ```
 
 produces a URL similar to:
@@ -520,8 +733,8 @@ HTTP methods that support request bodies accept a `RequestBody`:
 RequestBody body = RequestBody.json(user);
 
 Response response = Http.post(
-        "https://api.example.com/users",
-        body
+     "/users",
+     body
 );
 ```
 
@@ -549,6 +762,8 @@ JFetch provides synchronous and asynchronous versions of all supported HTTP meth
 
 For each method, JFetch provides overloads for the different combinations of URL, query parameters, request body, and headers.
 
+All methods support both relative URLs and absolute URLs. Relative URLs use the configured default base URL.
+
 ---
 
 ## Request Flow
@@ -558,23 +773,27 @@ A typical JFetch request follows this structure:
 ```text
 URL
  │
+ ├── Relative URL?
+ │       │
+ │       └── Default Base URL
+ │
  ├── Query Parameters
  │
  ├── Request Headers
  │
  └── Request Body
-        │
-        ▼
-   HTTP Request
-        │
-        ▼
- Java HttpClient
-        │
-        ▼
-   Server Response
-        │
-        ▼
-     Response
+         │
+         ▼
+    HTTP Request
+         │
+         ▼
+    Java HttpClient
+         │
+         ▼
+    Server Response
+         │
+         ▼
+       Response
 ```
 
 For synchronous requests, JFetch waits for the HTTP response and returns a `Response`.
@@ -596,14 +815,18 @@ For example:
 
 ```java
 try {
+
      Response response = Http.get(
-             "https://api.example.com/users"
+          "/users"
      );
 
      System.out.println(response.text());
+
 }
 catch (IOException | InterruptedException e) {
+
      e.printStackTrace();
+
 }
 ```
 
@@ -613,12 +836,17 @@ They can be handled using `exceptionally()`:
 
 ```java
 Http.getAsync(
-        "https://api.example.com/users"
+     "/users"
 ).thenAccept(response -> {
+
      System.out.println(response.text());
+
 }).exceptionally(error -> {
+
      error.printStackTrace();
+
      return null;
+
 });
 ```
 
@@ -626,11 +854,15 @@ HTTP error status codes such as `404` or `500` are still returned as normal `Res
 
 ```java
 if (response.isClientError()) {
+
      System.out.println("Client error");
+
 }
 
 if (response.isServerError()) {
+
      System.out.println("Server error");
+
 }
 ```
 
@@ -640,9 +872,13 @@ JFetch does not currently throw an exception solely because the server returned 
 
 ## Complete Example
 
-The following example demonstrates query parameters, headers, a JSON request body, and response handling:
+The following example demonstrates configuring a default base URL, query parameters, headers, a JSON request body, and response handling:
 
 ```java
+Http.setDefaultBaseUrl(
+     "https://api.example.com"
+);
+
 Map<String, Object> params = Map.of(
      "notify", true
 );
@@ -658,16 +894,18 @@ User user = new User(
 );
 
 Response response = Http.post(
-        "https://api.example.com/users",
-        params,
-        RequestBody.json(user),
-        headers
+     "/users",
+     params,
+     RequestBody.json(user),
+     headers
 );
 
 System.out.println("Status: " + response.statusCode());
 
 if (response.isSuccess()) {
+
      System.out.println(response.json());
+
 }
 ```
 
@@ -675,17 +913,29 @@ For an asynchronous version:
 
 ```java
 Http.postAsync(
-        "https://api.example.com/users",
-        params,
-        RequestBody.json(user),
-        headers
+     "/users",
+     params,
+     RequestBody.json(user),
+     headers
 ).thenAccept(response -> {
+
      System.out.println("Status: " + response.statusCode());
 
      if (response.isSuccess()) {
+
           System.out.println(response.json());
+
      }
+
 });
+```
+
+An absolute URL can still be used when a default base URL is configured:
+
+```java
+Http.get(
+     "https://api.github.com/users/octocat"
+);
 ```
 
 `Http` is the main entry point for making requests with JFetch. For response handling, see [`Response`](#response). For JSON request bodies, see [`RequestBody`](#requestbody), and for custom request headers, see [`Headers`](#headers).

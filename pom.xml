@@ -9,7 +9,7 @@
 
      <groupId>io.github.rijalharayo</groupId>
      <artifactId>jfetch</artifactId>
-     <version>1.0.1</version>
+     <version>1.1.0</version>
 
      <name>JFetch</name>
      <description>A lightweight, developer-friendly HTTP client for Java.</description>

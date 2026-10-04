@@ -19,6 +19,42 @@ with optional URL query parameters and request bodies.
 public class Http {
 
      private static final HttpClient CLIENT = HttpClient.newHttpClient();
+     private static String defaultBaseURL;
+
+     /**
+     Sets the default base URL used to resolve relative URLs.
+
+     @param baseUrl the base URL to prepend to relative URLs
+     */
+     public static void setDefaultBaseURL(String baseUrl) {
+          defaultBaseURL = baseUrl;
+     }
+
+     /**
+     Resolves the given URL against the default base URL.
+     Absolute URLs are returned unchanged.
+
+     @param url the absolute URL or the route to append to the base URL
+     @return the resolved URL
+     */
+     public static String resolveUrl(String url) {
+          if (defaultBaseURL == null || isAbsoluteUrl(url)) {
+               return url;
+          }
+
+          return defaultBaseURL + url;
+     }
+
+     /**
+     Checks whether the given URL is an absolute http or https URL.
+
+     @param url the URL to check
+     @return true if the URL starts with http:// or https://
+     */
+     public static boolean isAbsoluteUrl(String url) {
+          return url.startsWith("http://")
+                    || url.startsWith("https://");
+     }
 
      /**
      Sends a GET request to the specified URL.
@@ -31,7 +67,7 @@ public class Http {
      public static Response get(String url) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .GET()
                           .build()
           );
@@ -50,7 +86,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .GET(),
                           headers
                   ).build()
@@ -69,7 +105,7 @@ public class Http {
      public static Response get(String url, Map<String, ?> params) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .GET()
                           .build()
           );
@@ -89,7 +125,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .GET(),
                           headers
                   ).build()
@@ -108,7 +144,7 @@ public class Http {
      public static Response post(String url, RequestBody body) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .header("Content-Type", body.contentType())
                           .POST(body.publisher())
                           .build()
@@ -129,7 +165,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .header("Content-Type", body.contentType())
                                   .POST(body.publisher()),
                           headers
@@ -150,7 +186,7 @@ public class Http {
      public static Response post(String url, Map<String, ?> params, RequestBody body) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .header("Content-Type", body.contentType())
                           .POST(body.publisher())
                           .build()
@@ -172,7 +208,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .header("Content-Type", body.contentType())
                                   .POST(body.publisher()),
                           headers
@@ -191,7 +227,7 @@ public class Http {
      public static Response post(String url) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .POST(HttpRequest.BodyPublishers.noBody())
                           .build()
           );
@@ -210,7 +246,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .POST(HttpRequest.BodyPublishers.noBody()),
                           headers
                   ).build()
@@ -229,7 +265,7 @@ public class Http {
      public static Response post(String url, Map<String, ?> params) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .POST(HttpRequest.BodyPublishers.noBody())
                           .build()
           );
@@ -249,7 +285,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .POST(HttpRequest.BodyPublishers.noBody()),
                           headers
                   ).build()
@@ -268,7 +304,7 @@ public class Http {
      public static Response put(String url, RequestBody body) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .header("Content-Type", body.contentType())
                           .PUT(body.publisher())
                           .build()
@@ -289,7 +325,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .header("Content-Type", body.contentType())
                                   .PUT(body.publisher()),
                           headers
@@ -310,7 +346,7 @@ public class Http {
      public static Response put(String url, Map<String, ?> params, RequestBody body) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .header("Content-Type", body.contentType())
                           .PUT(body.publisher())
                           .build()
@@ -332,7 +368,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .header("Content-Type", body.contentType())
                                   .PUT(body.publisher()),
                           headers
@@ -351,7 +387,7 @@ public class Http {
      public static Response put(String url) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .PUT(HttpRequest.BodyPublishers.noBody())
                           .build()
           );
@@ -370,7 +406,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .PUT(HttpRequest.BodyPublishers.noBody()),
                           headers
                   ).build()
@@ -389,7 +425,7 @@ public class Http {
      public static Response put(String url, Map<String, ?> params) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .PUT(HttpRequest.BodyPublishers.noBody())
                           .build()
           );
@@ -409,7 +445,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .PUT(HttpRequest.BodyPublishers.noBody()),
                           headers
                   ).build()
@@ -428,7 +464,7 @@ public class Http {
      public static Response patch(String url, RequestBody body) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .header("Content-Type", body.contentType())
                           .method("PATCH", body.publisher())
                           .build()
@@ -449,7 +485,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .header("Content-Type", body.contentType())
                                   .method("PATCH", body.publisher()),
                           headers
@@ -470,7 +506,7 @@ public class Http {
      public static Response patch(String url, Map<String, ?> params, RequestBody body) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .header("Content-Type", body.contentType())
                           .method("PATCH", body.publisher())
                           .build()
@@ -492,7 +528,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .header("Content-Type", body.contentType())
                                   .method("PATCH", body.publisher()),
                           headers
@@ -511,7 +547,7 @@ public class Http {
      public static Response patch(String url) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .method("PATCH", HttpRequest.BodyPublishers.noBody())
                           .build()
           );
@@ -530,7 +566,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .method("PATCH", HttpRequest.BodyPublishers.noBody()),
                           headers
                   ).build()
@@ -549,7 +585,7 @@ public class Http {
      public static Response patch(String url, Map<String, ?> params) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .method("PATCH", HttpRequest.BodyPublishers.noBody())
                           .build()
           );
@@ -569,7 +605,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .method("PATCH", HttpRequest.BodyPublishers.noBody()),
                           headers
                   ).build()
@@ -587,7 +623,7 @@ public class Http {
      public static Response delete(String url) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .DELETE()
                           .build()
           );
@@ -606,7 +642,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .DELETE(),
                           headers
                   ).build()
@@ -625,7 +661,7 @@ public class Http {
      public static Response delete(String url, Map<String, ?> params) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .DELETE()
                           .build()
           );
@@ -645,7 +681,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .DELETE(),
                           headers
                   ).build()
@@ -664,7 +700,7 @@ public class Http {
      public static Response delete(String url, RequestBody body) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .header("Content-Type", body.contentType())
                           .method("DELETE", body.publisher())
                           .build()
@@ -685,7 +721,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .header("Content-Type", body.contentType())
                                   .method("DELETE", body.publisher()),
                           headers
@@ -706,7 +742,7 @@ public class Http {
      public static Response delete(String url, Map<String, ?> params, RequestBody body) throws IOException, InterruptedException {
           return send(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .header("Content-Type", body.contentType())
                           .method("DELETE", body.publisher())
                           .build()
@@ -728,7 +764,7 @@ public class Http {
           return send(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .header("Content-Type", body.contentType())
                                   .method("DELETE", body.publisher()),
                           headers
@@ -745,7 +781,7 @@ public class Http {
      public static CompletableFuture<Response> getAsync(String url) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .GET()
                           .build()
           );
@@ -762,7 +798,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .GET(),
                           headers
                   ).build()
@@ -779,7 +815,7 @@ public class Http {
      public static CompletableFuture<Response> getAsync(String url, Map<String, ?> params) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .GET()
                           .build()
           );
@@ -797,7 +833,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .GET(),
                           headers
                   ).build()
@@ -814,7 +850,7 @@ public class Http {
      public static CompletableFuture<Response> postAsync(String url, RequestBody body) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .header("Content-Type", body.contentType())
                           .POST(body.publisher())
                           .build()
@@ -833,7 +869,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .header("Content-Type", body.contentType())
                                   .POST(body.publisher()),
                           headers
@@ -852,7 +888,7 @@ public class Http {
      public static CompletableFuture<Response> postAsync(String url, Map<String, ?> params, RequestBody body) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .header("Content-Type", body.contentType())
                           .POST(body.publisher())
                           .build()
@@ -872,7 +908,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .header("Content-Type", body.contentType())
                                   .POST(body.publisher()),
                           headers
@@ -889,7 +925,7 @@ public class Http {
      public static CompletableFuture<Response> postAsync(String url) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .POST(HttpRequest.BodyPublishers.noBody())
                           .build()
           );
@@ -906,7 +942,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .POST(HttpRequest.BodyPublishers.noBody()),
                           headers
                   ).build()
@@ -923,7 +959,7 @@ public class Http {
      public static CompletableFuture<Response> postAsync(String url, Map<String, ?> params) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .POST(HttpRequest.BodyPublishers.noBody())
                           .build()
           );
@@ -941,7 +977,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .POST(HttpRequest.BodyPublishers.noBody()),
                           headers
                   ).build()
@@ -958,7 +994,7 @@ public class Http {
      public static CompletableFuture<Response> putAsync(String url, RequestBody body) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .header("Content-Type", body.contentType())
                           .PUT(body.publisher())
                           .build()
@@ -977,7 +1013,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .header("Content-Type", body.contentType())
                                   .PUT(body.publisher()),
                           headers
@@ -996,7 +1032,7 @@ public class Http {
      public static CompletableFuture<Response> putAsync(String url, Map<String, ?> params, RequestBody body) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .header("Content-Type", body.contentType())
                           .PUT(body.publisher())
                           .build()
@@ -1016,7 +1052,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .header("Content-Type", body.contentType())
                                   .PUT(body.publisher()),
                           headers
@@ -1033,7 +1069,7 @@ public class Http {
      public static CompletableFuture<Response> putAsync(String url) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .PUT(HttpRequest.BodyPublishers.noBody())
                           .build()
           );
@@ -1050,7 +1086,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .PUT(HttpRequest.BodyPublishers.noBody()),
                           headers
                   ).build()
@@ -1067,7 +1103,7 @@ public class Http {
      public static CompletableFuture<Response> putAsync(String url, Map<String, ?> params) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .PUT(HttpRequest.BodyPublishers.noBody())
                           .build()
           );
@@ -1085,7 +1121,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .PUT(HttpRequest.BodyPublishers.noBody()),
                           headers
                   ).build()
@@ -1102,7 +1138,7 @@ public class Http {
      public static CompletableFuture<Response> patchAsync(String url, RequestBody body) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .header("Content-Type", body.contentType())
                           .method("PATCH", body.publisher())
                           .build()
@@ -1121,7 +1157,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .header("Content-Type", body.contentType())
                                   .method("PATCH", body.publisher()),
                           headers
@@ -1140,7 +1176,7 @@ public class Http {
      public static CompletableFuture<Response> patchAsync(String url, Map<String, ?> params, RequestBody body) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .header("Content-Type", body.contentType())
                           .method("PATCH", body.publisher())
                           .build()
@@ -1160,7 +1196,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .header("Content-Type", body.contentType())
                                   .method("PATCH", body.publisher()),
                           headers
@@ -1177,7 +1213,7 @@ public class Http {
      public static CompletableFuture<Response> patchAsync(String url) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .method("PATCH", HttpRequest.BodyPublishers.noBody())
                           .build()
           );
@@ -1194,7 +1230,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .method("PATCH", HttpRequest.BodyPublishers.noBody()),
                           headers
                   ).build()
@@ -1211,7 +1247,7 @@ public class Http {
      public static CompletableFuture<Response> patchAsync(String url, Map<String, ?> params) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .method("PATCH", HttpRequest.BodyPublishers.noBody())
                           .build()
           );
@@ -1229,7 +1265,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .method("PATCH", HttpRequest.BodyPublishers.noBody()),
                           headers
                   ).build()
@@ -1245,7 +1281,7 @@ public class Http {
      public static CompletableFuture<Response> deleteAsync(String url) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .DELETE()
                           .build()
           );
@@ -1262,7 +1298,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .DELETE(),
                           headers
                   ).build()
@@ -1279,7 +1315,7 @@ public class Http {
      public static CompletableFuture<Response> deleteAsync(String url, Map<String, ?> params) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .DELETE()
                           .build()
           );
@@ -1297,7 +1333,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .DELETE(),
                           headers
                   ).build()
@@ -1314,7 +1350,7 @@ public class Http {
      public static CompletableFuture<Response> deleteAsync(String url, RequestBody body) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(URI.create(url))
+                          .uri(URI.create(resolveUrl(url)))
                           .header("Content-Type", body.contentType())
                           .method("DELETE", body.publisher())
                           .build()
@@ -1333,7 +1369,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(URI.create(url))
+                                  .uri(URI.create(resolveUrl(url)))
                                   .header("Content-Type", body.contentType())
                                   .method("DELETE", body.publisher()),
                           headers
@@ -1352,7 +1388,7 @@ public class Http {
      public static CompletableFuture<Response> deleteAsync(String url, Map<String, ?> params, RequestBody body) {
           return sendAsync(
                   HttpRequest.newBuilder()
-                          .uri(buildUri(url, params))
+                          .uri(buildUri(resolveUrl(url), params))
                           .header("Content-Type", body.contentType())
                           .method("DELETE", body.publisher())
                           .build()
@@ -1372,7 +1408,7 @@ public class Http {
           return sendAsync(
                   applyHeaders(
                           HttpRequest.newBuilder()
-                                  .uri(buildUri(url, params))
+                                  .uri(buildUri(resolveUrl(url), params))
                                   .header("Content-Type", body.contentType())
                                   .method("DELETE", body.publisher()),
                           headers
