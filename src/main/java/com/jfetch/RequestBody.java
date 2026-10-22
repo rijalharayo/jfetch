@@ -2,6 +2,7 @@ package com.jfetch;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.net.http.HttpRequest;
 
@@ -11,7 +12,8 @@ import java.net.http.HttpRequest;
     into formats suitable for sending with an HTTP request.</p>
 */
 public class RequestBody {
-     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+                                                            .registerModule(new JavaTimeModule());
 
      private final String content;
      private final String contentType;
