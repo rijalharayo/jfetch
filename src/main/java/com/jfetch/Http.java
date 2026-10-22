@@ -1,6 +1,8 @@
 package com.jfetch;
 
 import java.io.IOException;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -17,9 +19,18 @@ Supports GET, POST, PUT, PATCH, and DELETE requests,
 with optional URL query parameters and request bodies.
 */
 public class Http {
-
-     private static final HttpClient CLIENT = HttpClient.newHttpClient();
+     private static final CookieManager COOKIE_MANAGER = new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER);
+     private static final HttpClient CLIENT = HttpClient.newBuilder()
+                                                        .cookieHandler(COOKIE_MANAGER)
+                                                        .build();
      private static String defaultBaseURL;
+
+     /**
+        Clears all cookies stored by the HTTP client.
+     */
+     public static void clearCookies() {
+        COOKIE_MANAGER.getCookieStore().removeAll();
+     }
 
      /**
      Sets the default base URL used to resolve relative URLs.

@@ -26,7 +26,7 @@ Built on Java's standard `HttpClient`, JFetch aims to make HTTP requests less ve
 <dependency>
      <groupId>io.github.rijalharayo</groupId>
      <artifactId>jfetch</artifactId>
-     <version>1.1.1</version>
+     <version>1.2.0</version>
 </dependency>
 ```
 
@@ -193,7 +193,7 @@ JFetch uses:
 
 ## Project Status
 
-JFetch 1.1.1 has been released and published to Maven Central.
+JFetch 1.2.0 has been released and published to Maven Central.
 
 The core HTTP functionality currently includes synchronous and asynchronous requests, query parameters, custom headers, JSON request bodies, and JSON response parsing.
 
