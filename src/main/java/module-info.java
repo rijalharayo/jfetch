@@ -5,4 +5,6 @@ module io.github.rijalharayo.jfetch {
      requires com.fasterxml.jackson.datatype.jsr310;
 
      exports com.jfetch;
+
+     opens com.jfetch to com.fasterxml.jackson.databind;
 }

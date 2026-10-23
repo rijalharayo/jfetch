@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+
 /**
  Manages persistent storage of HTTP session cookies.
 
@@ -331,6 +333,12 @@ public final class SessionStorage {
           return null;
      }
 
+     @JsonAutoDetect(
+          fieldVisibility = JsonAutoDetect.Visibility.ANY,
+          getterVisibility = JsonAutoDetect.Visibility.NONE,
+          isGetterVisibility = JsonAutoDetect.Visibility.NONE,
+          setterVisibility = JsonAutoDetect.Visibility.NONE
+     )
      private static final class StoredCookie {
           public String uri;
           public String name;
