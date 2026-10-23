@@ -9,6 +9,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -25,11 +26,66 @@ public class Http {
                                                         .build();
      private static String defaultBaseURL;
 
+     
      /**
-        Clears all cookies stored by the HTTP client.
+      Returns the cookie manager used by the HTTP client.
+     */
+     static CookieManager cookieManager() {
+          return COOKIE_MANAGER;
+     }
+
+     /**
+      Saves cookies to the configured or default storage location.
+
+     @throws IOException if the cookies cannot be saved
+     */
+     public static void saveCookies() throws IOException {
+          SessionStorage.save();
+     }
+
+     /**
+      Saves cookies to a custom file.
+
+     @param path the file where cookies will be stored
+     @throws IOException if the cookies cannot be saved
+     */
+     public static void saveCookies(Path path) throws IOException {
+          SessionStorage.save(path);
+     }
+
+     /**
+      Loads cookies from the configured or default storage location.
+
+     @throws IOException if the cookies cannot be loaded
+     */
+     public static void loadCookies() throws IOException {
+          SessionStorage.load();
+     }
+
+     /**
+      Loads cookies from a custom file.
+
+     @param path the file containing saved cookies
+     @throws IOException if the cookies cannot be loaded
+     */
+     public static void loadCookies(Path path) throws IOException {
+          SessionStorage.load(path);
+     }
+
+     /**
+      Clears cookies from memory.
      */
      public static void clearCookies() {
-        COOKIE_MANAGER.getCookieStore().removeAll();
+          SessionStorage.clear();
+     }
+
+     /**
+      Deletes the saved cookie file.
+     Does not clear cookies from memory.
+     @throws IOException if the file cannot be deleted
+     */
+     public static void clearSavedCookies() throws IOException {
+          SessionStorage.clearSaved();
      }
 
      /**

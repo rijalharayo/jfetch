@@ -24,6 +24,8 @@ It supports:
 
 * Request bodies
 
+* Persistent cookies & session saving
+
 * Default base URLs
 
 All requests are sent using Java's built-in `HttpClient`.
@@ -939,3 +941,225 @@ Http.get(
 ```
 
 `Http` is the main entry point for making requests with JFetch. For response handling, see [`Response`](#response). For JSON request bodies, see [`RequestBody`](#requestbody), and for custom request headers, see [`Headers`](#headers).
+
+---
+
+## Cookies and Sessions
+
+`Http` uses a single shared cookie manager, so cookies set by a server (for example a session cookie after logging in) are automatically stored and sent back on later requests.
+
+```java
+Http.post(
+     "/login",
+     RequestBody.json(credentials)
+);
+
+// The session cookie is sent automatically
+Http.get("/profile");
+```
+
+Cookies are accepted using the `ACCEPT_ORIGINAL_SERVER` policy. This means a cookie is only stored when it comes from the server that the request was originally sent to. Cookies set by third-party servers are rejected.
+
+Cookies are kept in memory by default and are lost when the application exits. JFetch can save them to disk and load them again, which lets an application stay signed in between runs.
+
+### Saving Cookies
+
+Cookies can be saved to the configured or default storage location:
+
+```java
+Http.saveCookies();
+```
+
+They can also be saved to a custom file:
+
+```java
+Http.saveCookies(
+     Path.of("session.cookies")
+);
+```
+
+Both methods throw `IOException` if the cookies cannot be saved.
+
+### Loading Cookies
+
+Cookies can be loaded from the configured or default storage location:
+
+```java
+Http.loadCookies();
+```
+
+They can also be loaded from a custom file:
+
+```java
+Http.loadCookies(
+     Path.of("session.cookies")
+);
+```
+
+Both methods throw `IOException` if the cookies cannot be loaded.
+
+### Clearing Cookies
+
+Cookies can be cleared in two separate ways.
+
+Clear the cookies held in memory:
+
+```java
+Http.clearCookies();
+```
+
+Delete the saved cookie file:
+
+```java
+Http.clearSavedCookies();
+```
+
+These two operations are independent:
+
+| Method                     | Clears memory | Deletes saved file |
+| -------------------------- | ------------- | ------------------ |
+| `Http.clearCookies()`      | Yes           | No                 |
+| `Http.clearSavedCookies()` | No            | Yes                |
+
+To fully sign out and forget the session, call both:
+
+```java
+Http.clearCookies();
+Http.clearSavedCookies();
+```
+
+`clearSavedCookies()` throws `IOException` if the file cannot be deleted.
+
+### Cookie Methods Summary
+
+| Method                | Description                                        | Throws        |
+| --------------------- | -------------------------------------------------- | ------------- |
+| `saveCookies()`       | Saves cookies to the configured/default location   | `IOException` |
+| `saveCookies(Path)`   | Saves cookies to a custom file                     | `IOException` |
+| `loadCookies()`       | Loads cookies from the configured/default location | `IOException` |
+| `loadCookies(Path)`   | Loads cookies from a custom file                   | `IOException` |
+| `clearCookies()`      | Clears cookies from memory                         | None          |
+| `clearSavedCookies()` | Deletes the saved cookie file                      | `IOException` |
+
+### Example: Persistent Login
+
+```java
+Http.setDefaultBaseURL(
+     "https://api.example.com"
+);
+
+try {
+
+     // Restore a previous session, if one exists
+     Http.loadCookies();
+
+}
+catch (IOException e) {
+
+     // No saved session yet, so sign in
+     Http.post(
+          "/login",
+          RequestBody.json(credentials)
+     );
+
+     Http.saveCookies();
+
+}
+```
+
+---
+
+## Shared HTTP Client
+
+All requests, synchronous and asynchronous, are sent through one shared `HttpClient` with a single shared cookie manager. Because of this:
+
+* Cookies are shared across every request made through `Http`.
+* The default base URL is global to the application, not to a single request.
+* Setting the default base URL again replaces the previous value for all later requests.
+
+---
+
+## URL Utility Methods
+
+`Http` exposes two helper methods used internally to build request URLs. They can also be called directly.
+
+### resolveUrl
+
+Resolves a URL against the default base URL:
+
+```java
+Http.setDefaultBaseURL(
+     "https://api.example.com"
+);
+
+Http.resolveUrl("/users");
+// https://api.example.com/users
+
+Http.resolveUrl("https://api.github.com/users/octocat");
+// https://api.github.com/users/octocat
+```
+
+Rules:
+
+* If no default base URL has been set, the URL is returned unchanged.
+* If the URL is absolute, it is returned unchanged.
+* Otherwise the URL is appended directly to the default base URL.
+
+The base URL and the relative path are joined by simple concatenation. No slash is added or removed. A relative path should therefore start with `/`, and the base URL should not end with one.
+
+### isAbsoluteUrl
+
+Checks whether a URL is absolute:
+
+```java
+Http.isAbsoluteUrl("https://api.example.com/users"); // true
+Http.isAbsoluteUrl("http://localhost:8080/users");   // true
+Http.isAbsoluteUrl("/users");                        // false
+```
+
+A URL is treated as absolute only if it starts with `http://` or `https://`.
+
+---
+
+## Content-Type Behavior
+
+The `Content-Type` header is set automatically only when a `RequestBody` is supplied. It comes from the body's content type.
+
+Requests sent without a body (for example `Http.post("/users")`, `Http.put("/users/1")`, or `Http.patch("/users/1")`) do not add a `Content-Type` header. GET requests never send a body.
+
+---
+
+## Response Bodies
+
+Every response body is read as a `String`, for both synchronous and asynchronous requests. The `Response` object is created from this string body.
+
+---
+
+## Query Parameter Encoding Details
+
+* Parameter names and values are UTF-8 URL-encoded.
+* Values are converted using `String.valueOf()`, so a `null` value is sent as the text `null`.
+* If the URL already contains a `?`, new parameters are joined with `&`. Otherwise `?` is used.
+* If the `params` map is `null` or empty, the URL is used unchanged.
+* Parameters are added in the iteration order of the supplied `Map`. `Map.of(...)` does not guarantee a stable order, so use a `LinkedHashMap` when parameter order matters.
+
+```java
+Map<String, Object> params = new LinkedHashMap<>();
+params.put("page", 1);
+params.put("limit", 10);
+
+Http.get("/users", params);
+// /users?page=1&limit=10
+```
+
+---
+
+## Null Headers
+
+Passing `null` as the `Headers` argument is allowed. No custom headers are applied and the request is sent normally.
+
+---
+
+## Async Requests and Cookies
+
+Asynchronous requests use the same shared cookie manager as synchronous requests. Cookies stored by a synchronous login request are sent on later asynchronous requests, and the reverse also applies.
